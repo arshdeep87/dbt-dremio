@@ -22,28 +22,28 @@
                 then substring(table_schema, position('.' in table_schema) + 1)
                 else 'no_schema'
             end as table_schema
-        ,reflection_name as table_name
+        ,name as table_name
         ,'materializedview' as table_type
         ,case
-            when nullif(external_reflection, '') is not null then 'target: ' || external_reflection
+            when nullif(externalReflection, '') is not null then 'target: ' || externalReflection
             when arrow_cache then 'arrow cache'
         end as table_comment
         ,column_name
         ,ordinal_position as column_index
         ,lower(data_type) as column_type
         ,concat_ws(', ',
-        case when strpos(regexp_replace(display_columns, '$|, |^', '/'), '/' || column_name || '/') > 0 then 'display' end
+        case when strpos(regexp_replace(displayColumns, '$|, |^', '/'), '/' || column_name || '/') > 0 then 'display' end
         ,case when strpos(regexp_replace(dimensions, '$|, |^', '/'), '/' || column_name || '/') > 0 then 'dimension'  end
         ,case when strpos(regexp_replace(measures, '$|, |^', '/'), '/' || column_name || '/') > 0 then 'measure'  end
-        ,case when strpos(regexp_replace(sort_columns, '$|, |^', '/'), '/' || column_name || '/') > 0 then 'sort'  end
+        ,case when strpos(regexp_replace(sortColumns, '$|, |^', '/'), '/' || column_name || '/') > 0 then 'sort'  end
         ,case when strpos(regexp_replace(partition_columns, '$|, |^', '/'), '/' || column_name || '/') > 0 then 'partition'  end
         ,case when strpos(regexp_replace(distribution_columns, '$|, |^', '/'), '/' || column_name || '/') > 0 then 'distribution' end
         ) as column_comment
         ,cast(null as varchar) as table_owner
       from sys.reflections
       join information_schema.columns
-          on (columns.table_schema || '.' || columns.table_name = replace(dataset_name, '"', '')
-            and (strpos(regexp_replace(display_columns, '$|, |^', '/'), '/' || column_name || '/') > 0
+          on (columns.table_schema || '.' || columns.table_name = replace(dataset, '"', '')
+            and (strpos(regexp_replace(displayColumns, '$|, |^', '/'), '/' || column_name || '/') > 0
                   or strpos(regexp_replace(dimensions, '$|, |^', '/'), '/' || column_name || '/') > 0
                   or strpos(regexp_replace(measures, '$|, |^', '/'), '/' || column_name || '/') > 0 ))
       where 
@@ -130,27 +130,27 @@
 
       with cte1 as (
         select
-          dataset_name
-          ,reflection_name
+          dataset
+          ,name
           ,type
-          ,case when substr(dataset_name, 1, 1) = '"'
-          then strpos(dataset_name, '".') + 1
-          else strpos(dataset_name, '.')
+          ,case when substr(dataset, 1, 1) = '"'
+          then strpos(dataset, '".') + 1
+          else strpos(dataset, '.')
           end as first_dot
-          ,length(dataset_name) -
-          case when substr(dataset_name, length(dataset_name)) = '"'
-          then strpos(reverse(dataset_name), '".')
-          else strpos(reverse(dataset_name), '.') - 1
+          ,length(dataset) -
+          case when substr(dataset, length(dataset)) = '"'
+          then strpos(reverse(dataset), '".')
+          else strpos(reverse(dataset), '.') - 1
           end as last_dot
-          ,length(dataset_name) as length
+          ,length(dataset) as length
         from sys.reflections
       )
       , cte2 as (
         select
-          replace(substr(dataset_name, 1, first_dot - 1), '"', '') as table_catalog
-          ,reflection_name as table_name
+          replace(substr(dataset, 1, first_dot - 1), '"', '') as table_catalog
+          ,name as table_name
           ,replace(case when first_dot < last_dot
-          then substr(dataset_name, first_dot + 1, last_dot - first_dot - 1)
+          then substr(dataset, first_dot + 1, last_dot - first_dot - 1)
           else 'no_schema' end, '"', '') as table_schema
           ,'materializedview' as table_type
         from cte1
