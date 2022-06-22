@@ -36,8 +36,8 @@
         ,case when strpos(regexp_replace(dimensions, '$|, |^', '/'), '/' || column_name || '/') > 0 then 'dimension'  end
         ,case when strpos(regexp_replace(measures, '$|, |^', '/'), '/' || column_name || '/') > 0 then 'measure'  end
         ,case when strpos(regexp_replace(sortColumns, '$|, |^', '/'), '/' || column_name || '/') > 0 then 'sort'  end
-        ,case when strpos(regexp_replace(partition_columns, '$|, |^', '/'), '/' || column_name || '/') > 0 then 'partition'  end
-        ,case when strpos(regexp_replace(distribution_columns, '$|, |^', '/'), '/' || column_name || '/') > 0 then 'distribution' end
+        ,case when strpos(regexp_replace(partitionColumns, '$|, |^', '/'), '/' || column_name || '/') > 0 then 'partition'  end
+        ,case when strpos(regexp_replace(distributionColumns, '$|, |^', '/'), '/' || column_name || '/') > 0 then 'distribution' end
         ) as column_comment
         ,cast(null as varchar) as table_owner
       from sys.reflections
